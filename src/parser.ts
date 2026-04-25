@@ -6,6 +6,10 @@ export interface QueryParam {
   type: string;
   isArray: boolean;
   required: boolean;
+  enum?: string[];
+  format?: string;
+  default?: string;
+  description?: string;
 }
 
 export interface Endpoint {
@@ -31,12 +35,17 @@ export function parseOpenApiSpec(specPath: string): Endpoint[] {
         if (param.in === "query") {
           const schema = param.schema || {};
           const isArray = schema.type === "array" || !!schema.items;
+          const itemSchema = schema.items || {};
 
           queryParams.push({
             name: param.name,
-            type: isArray ? schema.items?.type || "string" : schema.type || "string",
+            type: isArray ? itemSchema.type || "string" : schema.type || "string",
             isArray,
             required: param.required || false,
+            enum: isArray ? itemSchema.enum : schema.enum,
+            format: isArray ? itemSchema.format : schema.format,
+            default: schema.default,
+            description: param.description,
           });
         }
       }

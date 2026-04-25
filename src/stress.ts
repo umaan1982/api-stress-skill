@@ -85,10 +85,20 @@ export function generateStressTestCases(endpoint: Endpoint): StressTestCase[] {
 
   for (const param of stringParams.slice(0, 3)) {
     if (param.name === "limit" || param.name === "offset") continue;
+    if (param.enum) continue;
     cases.push({
       endpoint,
       params: { [param.name]: "a".repeat(500) },
       description: `${param.name}=500chars`,
+    });
+  }
+
+  const enumParams = endpoint.queryParams.filter((p) => p.enum && !p.isArray);
+  for (const param of enumParams) {
+    cases.push({
+      endpoint,
+      params: { [param.name]: "invalid_enum_value" },
+      description: `${param.name}=invalid_enum`,
     });
   }
 
@@ -122,15 +132,15 @@ export function generateStressTestCases(endpoint: Endpoint): StressTestCase[] {
     for (const param of endpoint.queryParams) {
       if (param.isArray) {
         allParams[param.name] = generateArrayValues(param, 20);
-      } else if (param.type === "boolean") {
-        allParams[param.name] = "true";
-      } else if (param.type === "integer" || param.type === "number") {
-        allParams[param.name] = param.name === "limit" ? "500" : param.name === "offset" ? "0" : "100";
+      } else if (param.name === "limit") {
+        allParams[param.name] = "500";
+      } else if (param.name === "offset") {
+        allParams[param.name] = "0";
       } else {
-        allParams[param.name] = "test-value";
+        allParams[param.name] = generateParamValue(param);
       }
     }
-    cases.push({ endpoint, params: allParams, description: "all params combined" });
+    cases.push({ endpoint, params: allParams, description: "all params combined (schema-valid)" });
   }
 
   return cases;
@@ -138,6 +148,21 @@ export function generateStressTestCases(endpoint: Endpoint): StressTestCase[] {
 
 function generateArrayValues(param: QueryParam, count: number): string[] {
   const values: string[] = [];
+
+  if (param.enum && param.enum.length > 0) {
+    for (let i = 0; i < count; i++) {
+      values.push(param.enum[i % param.enum.length]);
+    }
+    return values;
+  }
+
+  if (param.format === "uuid") {
+    for (let i = 0; i < count; i++) {
+      values.push(generateUuid(i));
+    }
+    return values;
+  }
+
   for (let i = 1; i <= count; i++) {
     if (param.type === "integer" || param.type === "number") {
       values.push(String(i));
@@ -146,6 +171,43 @@ function generateArrayValues(param: QueryParam, count: number): string[] {
     }
   }
   return values;
+}
+
+function generateParamValue(param: QueryParam): string {
+  if (param.enum && param.enum.length > 0) {
+    return param.enum[0];
+  }
+
+  if (param.default !== undefined) {
+    return String(param.default);
+  }
+
+  if (param.format === "uuid") {
+    return generateUuid(1);
+  }
+
+  if (param.format === "date") {
+    return "2026-01-15";
+  }
+
+  if (param.format === "date-time") {
+    return "2026-01-15T10:30:00Z";
+  }
+
+  if (param.type === "integer" || param.type === "number") {
+    return "100";
+  }
+
+  if (param.type === "boolean") {
+    return "true";
+  }
+
+  return "test-value";
+}
+
+function generateUuid(seed: number): string {
+  const hex = seed.toString(16).padStart(8, "0");
+  return `${hex}-0000-4000-8000-000000000000`;
 }
 
 export function generateIdDiscoveryParams(ids: string[], sizes: number[]): Record<string, string[]>[] {
