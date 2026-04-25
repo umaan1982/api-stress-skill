@@ -38,12 +38,12 @@ npm run stress
 
 Filter by path:
 ```bash
-npm run stress -- --path=/users
+npm run stress -- --path=/your-endpoint
 ```
 
 Filter by tag:
 ```bash
-npm run stress -- --tag=Products
+npm run stress -- --tag=YourTag
 ```
 
 Adjust concurrency and delay:
