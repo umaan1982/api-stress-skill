@@ -1,0 +1,19 @@
+{
+  "name": "api-stress-skill",
+  "version": "1.0.0",
+  "description": "Claude Code skill for API stress testing with query param variations",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "stress": "node --loader ts-node/esm src/index.ts",
+    "parse": "node --loader ts-node/esm src/parser.ts"
+  },
+  "dependencies": {
+    "yaml": "2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+reports/
+findings/
+*.log
+api.v1.compiled.yml
