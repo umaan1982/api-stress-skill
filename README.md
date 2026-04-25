@@ -38,12 +38,17 @@ npm run stress
 
 Filter by path:
 ```bash
-npm run stress -- --path=/inbox
+npm run stress -- --path=/users
 ```
 
 Filter by tag:
 ```bash
-npm run stress -- --tag=Inbox
+npm run stress -- --tag=Products
+```
+
+Adjust concurrency and delay:
+```bash
+npm run stress -- --concurrency=10 --delay=20
 ```
 
 ## Output
